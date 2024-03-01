@@ -1,7 +1,7 @@
 {
     "name": "loucov/laravel-moncash-api",
     "type": "library",
-    "description": "Laravel MonCash Api",
+    "description": "Laravel MonCash Api - Beta",
     "keywords": [
         "LouCov",
         "LaravelMonCashApi"
