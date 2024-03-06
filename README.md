@@ -1,4 +1,4 @@
-# Mon Cash PHP SDK
+# Laravel Moncash API
 
 This is the Laravel Moncash API that allows php's developers to interract with the MonCash payment facility on their website. 
 
