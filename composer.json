@@ -1,6 +1,7 @@
 {
     "name": "loucov/laravel-moncash-api",
     "type": "library",
+    "version": "1.0.0",
     "description": "Laravel MonCash Api - Beta",
     "keywords": [
         "LouCov",
@@ -30,9 +31,17 @@
     },
     "extra": {
         "branch-alias": {
+            "dev-master": "1.x-dev"
+        },
+        "laravel": {
+            "providers": [
+                "LouCov\\LaravelMonCashApi\\MoncashServiceProvider"
+            ]
         }
     },
     "config": {
         "sort-packages": true
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

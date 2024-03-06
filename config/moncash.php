@@ -2,7 +2,10 @@
 
 return [
 
-    "debug_mode" => env("MONCASH_DEBUG_MODE", false),
+    "app_debug" => env("APP_DEBUG", true),
+
+
+    "debug_mode" => (bool) env("MONCASH_DEBUG_MODE", true),
 
 
     'client' => env('MONCASH_CLIENT_ID', false),

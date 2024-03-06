@@ -27,11 +27,37 @@ class TransactionController {
      * @param  mixed $data
      * @return object
      */
-    public function paymentObject(array $data) : object {
+    private function paymentObject(array $data) : object {
 
         $data = (object) $data;
 
         return (object) $data->payment;
+    }
+
+    /**
+     * getPayment
+     *
+     * @param  mixed $response
+     * @return object
+     */
+    private function getPayment(mixed $response) : object {
+
+        if (isset($response->status)) {
+            // Auth error
+            return $response;
+        }
+
+        if ($response->ok()) {
+            $data = $response->json();
+
+            return (object) [
+                ...$data,
+                "payment" => $this->paymentObject($data)
+            ];
+        }
+
+    //    Transaction details request error
+        return (object) $response->json();
     }
 
     /**
@@ -42,23 +68,13 @@ class TransactionController {
      */
     public function transactionDetails(mixed $transationId) : object {
 
-        $endpoint = Helpers::fullUrl(
-            $this->constants->base_endpoint,
+        $endpoint = Helpers::fullUrl( $this->constants->base_endpoint,
             $this->constants->retrieve_transaction_uri
         );
 
         $response = Helpers::requestWithToken($endpoint, ["transactionId" => $transationId]);
-        $data = $response->json();
 
-        if ($response->ok()) {
-            return (object) [
-                ...$data,
-                "payment" => $this->paymentObject($data)
-            ];
-        }
-
-    //    redirect to error page
-        return (object) $response->json();
+        return $this->getPayment($response);
     }
 
     /**
@@ -69,22 +85,11 @@ class TransactionController {
      */
     public function orderDetails(mixed $orderId) : object {
 
-        $endpoint = Helpers::fullUrl(
-            $this->constants->base_endpoint,
-            $this->constants->retrieve_order_uri
-        );
+        $endpoint = Helpers::fullUrl( $this->constants->base_endpoint,
+            $this->constants->retrieve_order_uri);
 
         $response = Helpers::requestWithToken($endpoint, ["orderId" => $orderId ]);
-        $data = $response->json();
 
-        if ($response->ok()) {
-            return (object) [
-                ...$data,
-                "payment" => $this->paymentObject($data)
-            ];
-        }
-
-    //    redirect to error page
-        return (object) $response->json();
+        return $this->getPayment($response);
     }
 }

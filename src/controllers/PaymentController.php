@@ -26,7 +26,7 @@ class PaymentController {
      * @param  mixed $data
      * @return object
      */
-    public function paymentToken(array $data) : object {
+    private function paymentToken(array $data) : object {
 
         $data = (object) $data;
 
@@ -34,37 +34,13 @@ class PaymentController {
     }
 
     /**
-     * paymentRequest
+     * getPayment
      *
-     * @param  mixed $order
-     * @return array
-     */
-    public function paymentRequest(Order $order) : array {
-
-        $endpoint = Helpers::fullUrl(
-            $this->constants->base_endpoint,
-            $this->constants->create_payment_uri
-        );
-
-        $response = Helpers::requestWithToken($endpoint, $order->toArray());
-
-        if ($response->accepted()) {
-            return $response->json();
-        }
-
-    //    redirect to error page
-        return $response->json();
-    }
-
-    /**
-     * payment
-     *
-     * @param  mixed $order
+     * @param  array $data
      * @return object
      */
-    public function payment(Order $order) : object {
+    private function getPayment(array $data) : object {
 
-        $data = $this->paymentRequest($order);
         $tokenData = $this->paymentToken($data);
         $redirectUri = $this->constants->redirect_uri.$tokenData->token;
 
@@ -78,5 +54,31 @@ class PaymentController {
             "payment_token" => $tokenData,
             "redirect" => $redirect
         ];
+    }
+
+    /**
+     * payment
+     *
+     * @param  Order $order
+     * @return object
+     */
+    public function payment(Order $order) : object {
+
+        $endpoint = Helpers::fullUrl($this->constants->base_endpoint, $this->constants->create_payment_uri);
+
+        $response = Helpers::requestWithToken($endpoint, $order->toArray());
+
+        if (isset($response->status)) {
+            // Auth error
+            return $response;
+        }
+
+        if ($response->accepted()){
+            // Status 202
+            return $this->getPayment($response->json());
+        }
+
+        // Payment request error
+        return (object) $response->json();
     }
 }

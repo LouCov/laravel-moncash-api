@@ -29,7 +29,7 @@ class TransferController {
      * @param  mixed $data
      * @return object
      */
-    public function transferObject(array $data) : object {
+    private function transferObject(array $data) : object {
 
         $data = (object) $data;
 
@@ -44,22 +44,25 @@ class TransferController {
      */
     public function transfer(Receiver $receiver) : object {
 
-        $endpoint = Helpers::fullUrl(
-            $this->constants->base_endpoint,
-            $this->constants->transfert_uri
-        );
+        $endpoint = Helpers::fullUrl( $this->constants->base_endpoint,
+            $this->constants->transfert_uri );
 
         $response = Helpers::requestWithToken($endpoint, $receiver->toArray());
-        $data = $response->json();
+
+        if (isset($response->status)) {
+            // Auth error
+            return $response;
+        }
 
         if ($response->ok()) {
+            $data = $response->json();
             return (object) [
                 ...$data,
                 "transfer" => $this->transferObject($data)
             ];
         }
 
-    //    redirect to error page
+    //    Transfer request error
         return (object) $response->json();
     }
 }

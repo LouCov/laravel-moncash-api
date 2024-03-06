@@ -37,9 +37,9 @@ class Authentification {
                 );
 
         } catch (ConnectionException $e) {
-            return (object) [
-                "message" => $e->getMessage(),
-            ];
+            if ($this->constants->app_debug) {
+                dd($e->getMessage());
+            }
         }
 
         if (!$response->ok()) {

@@ -22,6 +22,10 @@ class Helpers {
         $auth = $auth->getAuthentificationData();
         $const = self::constants();
 
+        if ($auth->status != 200) {
+            return $auth;
+        }
+
         return Http::withToken($auth->access_token)
             ->acceptJson()
             ->contentType($const->header_content_type)
