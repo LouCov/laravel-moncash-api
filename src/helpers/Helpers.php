@@ -28,7 +28,7 @@ class Helpers {
 
         return Http::withToken($auth->access_token)
             ->acceptJson()
-            ->contentType($const->header_content_type)
+            ->contentType($const->header->content_type)
             ->post($endpoint, $data);
     }
 
@@ -44,11 +44,13 @@ class Helpers {
 
         $const = self::constants();
 
-        if ($const->debug_mode) {
-            return $const->https_string.$const->sandbox_string.".".$baseEndpoint.$uri;
+        if ($const->mode->debug) {
+            return $const->string->https
+                . $const->string->sandbox
+                . "." . $baseEndpoint.$uri;
         }
 
-        return $const->https_string.$baseEndpoint.$uri;
+        return $const->string->https . $baseEndpoint.$uri;
     }
 
     /**
@@ -59,6 +61,9 @@ class Helpers {
      */
     public static function constants () : object {
 
-        return (object) config('moncash');
+        $array = config('moncash');
+        $object = json_decode(json_encode($array));
+
+        return $object;
     }
 }

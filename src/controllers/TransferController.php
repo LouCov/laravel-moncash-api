@@ -12,7 +12,7 @@ use LouCov\LaravelMonCashApi\Models\Receiver;
  */
 class TransferController {
 
-    private object $constants;
+    private object $const;
 
     /**
      * __construct
@@ -20,7 +20,7 @@ class TransferController {
      * @return void
      */
     public function __construct() {
-        $this->constants = Helpers::constants();
+        $this->const = Helpers::constants();
     }
 
     /**
@@ -44,9 +44,7 @@ class TransferController {
      */
     public function transfer(Receiver $receiver) : object {
 
-        $endpoint = Helpers::fullUrl( $this->constants->base_endpoint,
-            $this->constants->transfert_uri );
-
+        $endpoint = Helpers::fullUrl( $this->const->endpoint->base, $this->const->uri->transfert );
         $response = Helpers::requestWithToken($endpoint, $receiver->toArray());
 
         if (isset($response->status)) {

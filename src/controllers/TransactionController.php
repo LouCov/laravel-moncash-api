@@ -10,7 +10,7 @@ use LouCov\LaravelMonCashApi\Helpers\Helpers;
  */
 class TransactionController {
 
-    private object $constants;
+    private object $const;
 
     /**
      * __construct
@@ -18,7 +18,7 @@ class TransactionController {
      * @return void
      */
     public function __construct() {
-        $this->constants = Helpers::constants();
+        $this->const = Helpers::constants();
     }
 
     /**
@@ -68,11 +68,13 @@ class TransactionController {
      */
     public function transactionDetails(mixed $transationId) : object {
 
-        $endpoint = Helpers::fullUrl( $this->constants->base_endpoint,
-            $this->constants->retrieve_transaction_uri
+        $endpoint = Helpers::fullUrl( $this->const->endpoint->base,
+            $this->const->uri->retrieve_transaction
         );
 
-        $response = Helpers::requestWithToken($endpoint, ["transactionId" => $transationId]);
+        $response = Helpers::requestWithToken($endpoint, [
+            $this->const->string->transaction_id => $transationId
+        ]);
 
         return $this->getPayment($response);
     }
@@ -85,10 +87,12 @@ class TransactionController {
      */
     public function orderDetails(mixed $orderId) : object {
 
-        $endpoint = Helpers::fullUrl( $this->constants->base_endpoint,
-            $this->constants->retrieve_order_uri);
+        $endpoint = Helpers::fullUrl( $this->const->endpoint->base,
+            $this->const->uri->retrieve_order);
 
-        $response = Helpers::requestWithToken($endpoint, ["orderId" => $orderId ]);
+        $response = Helpers::requestWithToken($endpoint, [
+            $this->const->string->order_id => $orderId 
+        ]);
 
         return $this->getPayment($response);
     }

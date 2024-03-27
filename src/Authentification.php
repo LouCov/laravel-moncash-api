@@ -11,7 +11,7 @@ use Illuminate\Http\Client\ConnectionException;
  */
 class Authentification {
 
-    private  object $constants;
+    private  object $const;
 
     /**
      * __construct
@@ -19,25 +19,25 @@ class Authentification {
      * @return void
      */
     public function __construct() {
-        $this->constants = Helpers::constants();
+        $this->const = Helpers::constants();
     }
 
     public function getAuthentificationData() : object {
 
-        $baseEndpoint = Helpers::fullUrl($this->constants->base_endpoint, $this->constants->oauth_uri);
+        $baseEndpoint = Helpers::fullUrl($this->const->endpoint->base, $this->const->uri->oauth);
 
         try {
-            $response = Http::withBasicAuth( $this->constants->client, $this->constants->secret)
+            $response = Http::withBasicAuth( $this->const->identifier->client, $this->const->identifier->secret)
                 ->acceptJson()
-                ->contentType($this->constants->header_content_type)
+                ->contentType($this->const->header->content_type)
                 ->asForm()
                 ->post(
                     $baseEndpoint,
-                    $this->constants->oauth_params
+                    $this->const->header->oauth_params
                 );
 
         } catch (ConnectionException $e) {
-            if ($this->constants->app_debug) {
+            if ($this->const->mode->app_debug) {
                 dd($e->getMessage());
             }
         }

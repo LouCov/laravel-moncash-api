@@ -9,7 +9,7 @@ use LouCov\LaravelMonCashApi\Helpers\Helpers;
  */
 class PaymentController {
 
-    private object $constants;
+    private object $const;
 
     /**
      * __construct
@@ -17,7 +17,7 @@ class PaymentController {
      * @return void
      */
     public function __construct() {
-        $this->constants = Helpers::constants();
+        $this->const = Helpers::constants();
     }
 
     /**
@@ -42,10 +42,10 @@ class PaymentController {
     private function getPayment(array $data) : object {
 
         $tokenData = $this->paymentToken($data);
-        $redirectUri = $this->constants->redirect_uri.$tokenData->token;
+        $redirectUri = $this->const->uri->redirect . $tokenData->token;
 
         $redirect = Helpers::fullUrl(
-            $this->constants->redirect_endpoint,
+            $this->const->endpoint->redirect,
             $redirectUri
         );
 
@@ -64,7 +64,7 @@ class PaymentController {
      */
     public function payment(Order $order) : object {
 
-        $endpoint = Helpers::fullUrl($this->constants->base_endpoint, $this->constants->create_payment_uri);
+        $endpoint = Helpers::fullUrl($this->const->endpoint->base, $this->const->uri->create_payment);
 
         $response = Helpers::requestWithToken($endpoint, $order->toArray());
 
