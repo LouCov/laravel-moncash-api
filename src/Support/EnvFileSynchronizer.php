@@ -21,61 +21,18 @@ final class EnvFileSynchronizer
     /**
      * Curated list of env variables managed by the package.
      *
-     * @var list<array{key: string, default: string, comment: string, required: bool}>
+     * @var list<array{key: string, default: string, required: bool}>
      */
     private const VARIABLES = [
-        [
-            'key'      => 'MONCASH_SANDBOX',
-            'default'  => 'true',
-            'comment'  => 'MonCash sandbox mode (true) or live mode (false).',
-            'required' => true,
-        ],
-        [
-            'key'      => 'MONCASH_CLIENT_ID',
-            'default'  => '',
-            'comment'  => 'MonCash OAuth client id.',
-            'required' => true,
-        ],
-        [
-            'key'      => 'MONCASH_SECRET_KEY',
-            'default'  => '',
-            'comment'  => 'MonCash OAuth client secret.',
-            'required' => true,
-        ],
-        [
-            'key'      => 'MONCASH_BUSINESS_KEY',
-            'default'  => '',
-            'comment'  => 'MonCash business key (optional).',
-            'required' => false,
-        ],
-        [
-            'key'      => 'MONCASH_HTTP_TIMEOUT',
-            'default'  => '15',
-            'comment'  => 'HTTP request timeout in seconds.',
-            'required' => false,
-        ],
-        [
-            'key'      => 'MONCASH_HTTP_RETRIES',
-            'default'  => '2',
-            'comment'  => 'Number of retries on transient HTTP failures.',
-            'required' => false,
-        ],
-        [
-            'key'      => 'MONCASH_HTTP_RETRY_WAIT',
-            'default'  => '200',
-            'comment'  => 'Wait between retries in milliseconds.',
-            'required' => false,
-        ],
-        [
-            'key'      => 'MONCASH_CACHE_STORE',
-            'default'  => '',
-            'comment'  => 'Cache store used for the OAuth access token (default store when empty).',
-            'required' => false,
-        ],
+        ['key' => 'MONCASH_SANDBOX',      'default' => 'true',  'required' => true],
+        ['key' => 'MONCASH_CLIENT_ID',    'default' => '',      'required' => true],
+        ['key' => 'MONCASH_SECRET_KEY',   'default' => '',      'required' => true],
+        ['key' => 'MONCASH_BUSINESS_KEY', 'default' => '',      'required' => false],
+        ['key' => 'MONCASH_HTTP_TIMEOUT', 'default' => '15',    'required' => false],
+        ['key' => 'MONCASH_HTTP_RETRIES', 'default' => '2',     'required' => false],
+        ['key' => 'MONCASH_HTTP_RETRY_WAIT', 'default' => '200','required' => false],
+        ['key' => 'MONCASH_CACHE_STORE',  'default' => '',      'required' => false],
     ];
-
-    private const SECTION_HEADER = '# --- MonCash API (loucov/laravel-moncash-api) ---';
-    private const SECTION_FOOTER = '# --- End MonCash API ---';
 
     /** @var list<string> */
     private const TARGET_FILES = ['.env', '.env.example'];
@@ -186,15 +143,11 @@ final class EnvFileSynchronizer
      */
     private function appendBlock(string $content, array $variables): string
     {
-        $lines = [self::SECTION_HEADER];
+        $lines = [];
 
         foreach ($variables as $variable) {
-            $required = $variable['required'] ? ' [required]' : '';
-            $lines[]  = '# ' . $variable['comment'] . $required;
-            $lines[]  = $this->formatAssignment($variable['key'], $variable['default']);
+            $lines[] = $this->formatAssignment($variable['key'], $variable['default']);
         }
-
-        $lines[] = self::SECTION_FOOTER;
 
         $block = implode(PHP_EOL, $lines);
 
