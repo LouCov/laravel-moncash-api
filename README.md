@@ -1,6 +1,6 @@
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/LouCov/laravel-moncash-api/main/.github/assets/laravel-moncash-api-logo.png" alt="loucov"/>
+    <img src="https://raw.githubusercontent.com/LouCov/laravel-moncash-api/dev/.github/assets/logo.png" alt="loucov"/>
 </p>
 
 
