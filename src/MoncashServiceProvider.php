@@ -5,11 +5,13 @@ namespace LouCov\LaravelMonCashApi;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\ServiceProvider;
 use LouCov\LaravelMonCashApi\Console\InstallCommand;
+use LouCov\LaravelMonCashApi\Console\UninstallCommand;
 use LouCov\LaravelMonCashApi\Http\MoncashClient;
 use LouCov\LaravelMonCashApi\Services\PaymentService;
 use LouCov\LaravelMonCashApi\Services\TransactionService;
 use LouCov\LaravelMonCashApi\Services\TransferService;
 use LouCov\LaravelMonCashApi\Support\Config;
+use LouCov\LaravelMonCashApi\Support\ComposerJsonEditor;
 use LouCov\LaravelMonCashApi\Support\EnvFileSynchronizer;
 use Throwable;
 
@@ -71,6 +73,7 @@ class MoncashServiceProvider extends ServiceProvider
 
         $this->commands([
             InstallCommand::class,
+            UninstallCommand::class,
         ]);
 
         // After every `composer install` / `composer update` / `composer
@@ -80,6 +83,7 @@ class MoncashServiceProvider extends ServiceProvider
         if ($this->isPackageDiscoveryRun()) {
             $this->publishConfigIfAbsent();
             $this->syncEnvironmentFile();
+            $this->registerComposerUninstallHook();
         }
     }
 
@@ -108,6 +112,15 @@ class MoncashServiceProvider extends ServiceProvider
      * the first time the package is discovered. Subsequent runs are no-ops so
      * any local customisations made by the user are never overwritten.
      */
+    private function registerComposerUninstallHook(): void
+    {
+        try {
+            ComposerJsonEditor::registerUninstallHook($this->app->basePath());
+        } catch (Throwable) {
+            // Never break `package:discover` on a file-write error.
+        }
+    }
+
     private function publishConfigIfAbsent(): void
     {
         $destination = $this->app->configPath('moncash.php');

@@ -24,14 +24,13 @@ final class EnvFileSynchronizer
      * @var list<array{key: string, default: string, required: bool}>
      */
     private const VARIABLES = [
-        ['key' => 'MONCASH_SANDBOX',      'default' => 'true',  'required' => true],
-        ['key' => 'MONCASH_CLIENT_ID',    'default' => '',      'required' => true],
-        ['key' => 'MONCASH_SECRET_KEY',   'default' => '',      'required' => true],
-        ['key' => 'MONCASH_BUSINESS_KEY', 'default' => '',      'required' => false],
-        ['key' => 'MONCASH_HTTP_TIMEOUT', 'default' => '15',    'required' => false],
-        ['key' => 'MONCASH_HTTP_RETRIES', 'default' => '2',     'required' => false],
-        ['key' => 'MONCASH_HTTP_RETRY_WAIT', 'default' => '200','required' => false],
-        ['key' => 'MONCASH_CACHE_STORE',  'default' => '',      'required' => false],
+        ['key' => 'MONCASH_SANDBOX',         'default' => 'true',  'required' => true],
+        ['key' => 'MONCASH_CLIENT_ID',       'default' => '',      'required' => true],
+        ['key' => 'MONCASH_SECRET_KEY',      'default' => '',      'required' => true],
+        ['key' => 'MONCASH_BUSINESS_KEY',    'default' => '',      'required' => false],
+        ['key' => 'MONCASH_HTTP_TIMEOUT',    'default' => '15',    'required' => false],
+        ['key' => 'MONCASH_HTTP_RETRIES',    'default' => '2',     'required' => false],
+        ['key' => 'MONCASH_HTTP_RETRY_WAIT', 'default' => '200',   'required' => false],
     ];
 
     /** @var list<string> */
@@ -63,6 +62,27 @@ final class EnvFileSynchronizer
     }
 
     /**
+     * Remove all MonCash environment variables from the env files.
+     * Returns, per file, the list of keys that were removed.
+     *
+     * @return array<string, list<string>>
+     */
+    public function unsync(): array
+    {
+        $report = [];
+
+        foreach (self::TARGET_FILES as $file) {
+            $path    = $this->basePath . DIRECTORY_SEPARATOR . $file;
+            $removed = $this->unsyncFile($path);
+            if ($removed !== []) {
+                $report[$file] = $removed;
+            }
+        }
+
+        return $report;
+    }
+
+    /**
      * @return list<array{key: string, required: bool}>
      */
     public function requiredVariables(): array
@@ -71,6 +91,71 @@ final class EnvFileSynchronizer
             fn (array $v) => ['key' => $v['key'], 'required' => $v['required']],
             array_filter(self::VARIABLES, fn (array $v) => $v['required']),
         ));
+    }
+
+    /**
+     * @return list<string> Keys removed from this file.
+     */
+    private function unsyncFile(string $path): array
+    {
+        if (!is_file($path) || !is_readable($path)) {
+            return [];
+        }
+
+        $handle = @fopen($path, 'r+');
+        if ($handle === false) {
+            return [];
+        }
+
+        try {
+            if (!flock($handle, LOCK_EX)) {
+                return [];
+            }
+
+            $content = stream_get_contents($handle);
+            if ($content === false) {
+                return [];
+            }
+
+            $keys    = array_map(fn (array $v) => $v['key'], self::VARIABLES);
+            $removed = [];
+
+            // Split preserving \r\n and \n equally.
+            $lines    = preg_split('/\r?\n/', $content) ?: [];
+            $filtered = [];
+
+            foreach ($lines as $line) {
+                $matched = false;
+                foreach ($keys as $key) {
+                    if (preg_match('/^[ \t]*' . preg_quote($key, '/') . '[ \t]*=/', $line)) {
+                        $removed[] = $key;
+                        $matched   = true;
+                        break;
+                    }
+                }
+                if (!$matched) {
+                    $filtered[] = $line;
+                }
+            }
+
+            if ($removed === []) {
+                return [];
+            }
+
+            // Trim trailing blank lines and ensure a single trailing newline.
+            $newContent = rtrim(implode(PHP_EOL, $filtered)) . PHP_EOL;
+
+            if (!$this->writeAtomically($path, $newContent)) {
+                return [];
+            }
+
+            return $removed;
+        } catch (Throwable) {
+            return [];
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
+        }
     }
 
     /**
