@@ -108,9 +108,9 @@ class MoncashServiceProvider extends ServiceProvider
     }
 
     /**
-     * Copy the package config into the host application's config directory
-     * the first time the package is discovered. Subsequent runs are no-ops so
-     * any local customisations made by the user are never overwritten.
+     * Inject a pre-package-uninstall Composer script into the host's
+     * composer.json so that `composer remove` triggers automatic cleanup.
+     * Idempotent — already-registered entries are never duplicated.
      */
     private function registerComposerUninstallHook(): void
     {

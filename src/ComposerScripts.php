@@ -33,17 +33,27 @@ final class ComposerScripts
             return;
         }
 
-        $root = self::projectRoot();
+        $root = self::projectRoot($event);
         if ($root === null) {
             return;
         }
 
+        self::cleanup($root);
+    }
+
+    // -------------------------------------------------------------------------
+
+    /**
+     * Remove everything the package added to the host application.
+     * Centralised so both the Composer hook and the artisan command share
+     * the same logic.
+     */
+    public static function cleanup(string $root): void
+    {
         self::removeConfig($root);
         self::removeEnvVariables($root);
         self::removeComposerHook($root);
     }
-
-    // -------------------------------------------------------------------------
 
     private static function removeConfig(string $root): void
     {
@@ -88,13 +98,29 @@ final class ComposerScripts
     }
 
     /**
-     * Walk up the directory tree from this file until we find `artisan`,
-     * which marks the root of a Laravel application.
+     * Resolve the Laravel project root.
+     *
+     * Prefers the Composer-provided vendor-dir (accurate, no guessing), then
+     * falls back to walking up from __DIR__ (works when called outside of a
+     * Composer event context).
      */
-    private static function projectRoot(): ?string
+    private static function projectRoot(mixed $event = null): ?string
     {
-        $dir = __DIR__;
+        // Primary: ask Composer where its vendor directory lives.
+        if ($event !== null) {
+            try {
+                $vendorDir = $event->getComposer()->getConfig()->get('vendor-dir');
+                if (is_string($vendorDir) && $vendorDir !== '') {
+                    return dirname($vendorDir);
+                }
+            } catch (Throwable) {
+                // Fall through to the directory-walk approach.
+            }
+        }
 
+        // Fallback: ascend from this file (vendor/loucov/laravel-moncash-api/src)
+        // up to the project root, identified by the presence of `artisan`.
+        $dir = __DIR__;
         for ($i = 0; $i < 6; $i++) {
             $dir = dirname($dir);
             if (is_file($dir . DIRECTORY_SEPARATOR . 'artisan')) {
