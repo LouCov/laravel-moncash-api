@@ -4,129 +4,94 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Version
+    | Sandbox mode
     |--------------------------------------------------------------------------
     |
-    | This value is the name of your application, which will be used when the
-    | framework needs to place the application's name in a notification or
-    | other UI elements where an application name needs to be displayed.
+    | When true, requests hit the MonCash sandbox environment. Set to false
+    | in production to hit the live MonCash gateway.
     |
     */
 
-    "version" => 'v1',
-
+    'sandbox' => (bool) env('MONCASH_SANDBOX', true),
 
     /*
     |--------------------------------------------------------------------------
-    | Mode
+    | Credentials
     |--------------------------------------------------------------------------
     |
-    | This value is the name of your application, which will be used when the
-    | framework needs to place the application's name in a notification or
-    | other UI elements where an application name needs to be displayed.
+    | Your MonCash business application credentials. You can find these on
+    | your MonCash business dashboard. `business_key` is optional and only
+    | required for certain endpoints.
     |
     */
 
-    "mode" => [
-        "debug" => (bool) env("MONCASH_DEBUG_MODE", true),
-        "app_debug" => env("APP_DEBUG", true),    
+    'credentials' => [
+        'client_id'    => env('MONCASH_CLIENT_ID'),
+        'secret_key'   => env('MONCASH_SECRET_KEY'),
+        'business_key' => env('MONCASH_BUSINESS_KEY'),
     ],
 
-
     /*
     |--------------------------------------------------------------------------
-    | Identifier
+    | HTTP client
     |--------------------------------------------------------------------------
     |
-    | This value is the name of your application, which will be used when the
-    | framework needs to place the application's name in a notification or
-    | other UI elements where an application name needs to be displayed.
+    | Fine-grained control over the outbound HTTP calls. `timeout` is the
+    | maximum number of seconds to wait for a response; `retries` is the
+    | number of times a failed (network-level) request should be retried.
     |
     */
 
-    "identifier" => [
-        'client' => env('MONCASH_CLIENT_ID', false),
-        'secret' => env('MONCASH_SECRET_KEY', false),
-        'business_key' => env('MONCASH_BUSINESS_KEY', false),
+    'http' => [
+        'timeout'    => (int) env('MONCASH_HTTP_TIMEOUT', 15),
+        'retries'    => (int) env('MONCASH_HTTP_RETRIES', 2),
+        'retry_wait' => (int) env('MONCASH_HTTP_RETRY_WAIT', 200), // ms
     ],
 
-
     /*
     |--------------------------------------------------------------------------
-    | Header
+    | Token cache
     |--------------------------------------------------------------------------
     |
-    | This value is the name of your application, which will be used when the
-    | framework needs to place the application's name in a notification or
-    | other UI elements where an application name needs to be displayed.
+    | MonCash OAuth access tokens are valid for a short window. We cache the
+    | token to avoid re-authenticating on every single API call. Set `store`
+    | to null to use the default cache store.
     |
     */
 
-    "header" => [
-        "content_type" => "application/json",
-        "oauth_params" => [
-            "scope"=> "read,write",
-            "grant_type" => "client_credentials"
+    'cache' => [
+        'store'      => env('MONCASH_CACHE_STORE'),
+        'key'        => 'moncash.access_token',
+        'ttl_buffer' => 30, // subtract this many seconds from the reported TTL
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Endpoints
+    |--------------------------------------------------------------------------
+    |
+    | Hosts and paths for the MonCash gateway. You should rarely need to
+    | change these unless MonCash updates their API.
+    |
+    */
+
+    'endpoints' => [
+        'live' => [
+            'api'      => 'https://moncashbutton.digicelgroup.com/Api',
+            'redirect' => 'https://moncashbutton.digicelgroup.com/Moncash-middleware',
+        ],
+        'sandbox' => [
+            'api'      => 'https://sandbox.moncashbutton.digicelgroup.com/Api',
+            'redirect' => 'https://sandbox.moncashbutton.digicelgroup.com/Moncash-middleware',
         ],
     ],
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Endpoint
-    |--------------------------------------------------------------------------
-    |
-    | This value is the name of your application, which will be used when the
-    | framework needs to place the application's name in a notification or
-    | other UI elements where an application name needs to be displayed.
-    |
-    */
-
-    "endpoint" => [
-        "base" => "moncashbutton.digicelgroup.com/Api",
-        "redirect" => "moncashbutton.digicelgroup.com/Moncash-middleware",
-    ],
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Uri
-    |--------------------------------------------------------------------------
-    |
-    | This value is the name of your application, which will be used when the
-    | framework needs to place the application's name in a notification or
-    | other UI elements where an application name needs to be displayed.
-    |
-    */
-
-    "uri" => [
-        "oauth" => "/oauth/token",
-        "redirect" => "/Payment/Redirect?token=",
-        "create_payment" => "/v1/CreatePayment",
-        "retrieve_transaction" => "/v1/RetrieveTransactionPayment",
-        "retrieve_order" => "/v1/RetrieveOrderPayment",
-        "transfert" => "/v1/Transfert",
-    ],
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | String
-    |--------------------------------------------------------------------------
-    |
-    | This value is the name of your application, which will be used when the
-    | framework needs to place the application's name in a notification or
-    | other UI elements where an application name needs to be displayed.
-    |
-    */
-
-    "string" => [
-        "sandbox" => "sandbox",
-        "live" => "live",
-        "https" => "https://",
-        
-        "transaction_id" => "transactionId",
-        "order_id" => "orderId",
+    'paths' => [
+        'oauth'                => '/oauth/token',
+        'create_payment'       => '/v1/CreatePayment',
+        'retrieve_transaction' => '/v1/RetrieveTransactionPayment',
+        'retrieve_order'       => '/v1/RetrieveOrderPayment',
+        'transfer'             => '/v1/Transfert',
+        'redirect'             => '/Payment/Redirect?token=',
     ],
 ];
-

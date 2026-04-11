@@ -1,10 +1,15 @@
 {
     "name": "loucov/laravel-moncash-api",
     "type": "library",
-    "description": "Laravel MonCash Api",
+    "description": "Laravel package to integrate the Digicel Haiti MonCash payment gateway (payments, transfers, transaction lookup).",
     "keywords": [
         "LouCov",
-        "LaravelMonCashApi"
+        "laravel",
+        "moncash",
+        "digicel",
+        "haiti",
+        "payment",
+        "gateway"
     ],
     "homepage": "https://github.com/LouCov/laravel-moncash-api",
     "license": "MIT",
@@ -16,26 +21,37 @@
             "role": "Developer"
         }
     ],
-    "require-dev": {
+    "require": {
         "php": "^8.1",
-        "laravel/framework": "^8.0"
+        "illuminate/support": "^9.0|^10.0|^11.0|^12.0|^13.0",
+        "illuminate/http": "^9.0|^10.0|^11.0|^12.0|^13.0",
+        "illuminate/contracts": "^9.0|^10.0|^11.0|^12.0|^13.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^7.0|^8.0|^9.0|^10.0",
+        "phpunit/phpunit": "^9.5|^10.0|^11.0"
     },
     "autoload": {
         "psr-4": {
-            "LouCov\\LaravelMonCashApi\\": "src/",
-            "LouCov\\LaravelMonCashApi\\Helpers\\": "src/helpers/",
-            "LouCov\\LaravelMonCashApi\\Models\\": "src/models/",
-            "LouCov\\LaravelMonCashApi\\Controllers\\": "src/controllers/"
+            "LouCov\\LaravelMonCashApi\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "LouCov\\LaravelMonCashApi\\Tests\\": "tests/"
         }
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.x-dev"
+            "dev-master": "2.x-dev"
         },
         "laravel": {
             "providers": [
                 "LouCov\\LaravelMonCashApi\\MoncashServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "MoncashApi": "LouCov\\LaravelMonCashApi\\Facades\\MoncashApi"
+            }
         }
     },
     "config": {
