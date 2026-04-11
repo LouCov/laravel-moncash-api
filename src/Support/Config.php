@@ -75,23 +75,6 @@ final class Config
         return (int) ($this->config['http']['retry_wait'] ?? 200);
     }
 
-    public function cacheStore(): ?string
-    {
-        $store = $this->config['cache']['store'] ?? null;
-
-        return is_string($store) && $store !== '' ? $store : null;
-    }
-
-    public function cacheKey(): string
-    {
-        return (string) ($this->config['cache']['key'] ?? 'moncash.access_token');
-    }
-
-    public function cacheTtlBuffer(): int
-    {
-        return (int) ($this->config['cache']['ttl_buffer'] ?? 30);
-    }
-
     private function requireString(string $key, ?string $envHint = null): string
     {
         $value = data_get($this->config, $key);

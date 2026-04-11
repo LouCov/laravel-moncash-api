@@ -11,8 +11,8 @@ use LouCov\LaravelMonCashApi\Support\EnvFileSynchronizer;
  * application's .env / .env.example files with the MonCash variables.
  *
  * Running `composer require loucov/laravel-moncash-api` already triggers
- * the same sync automatically (via `package:discover`); this command lets
- * users re-run it on demand.
+ * the same steps automatically (via `package:discover`); this command lets
+ * users re-run the install or force-overwrite an existing config with --force.
  */
 class InstallCommand extends Command
 {

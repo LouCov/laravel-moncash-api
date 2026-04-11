@@ -2,7 +2,6 @@
 
 namespace LouCov\LaravelMonCashApi;
 
-use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use LouCov\LaravelMonCashApi\Exceptions\AuthenticationException;
@@ -11,54 +10,25 @@ use LouCov\LaravelMonCashApi\Support\Config;
 use Throwable;
 
 /**
- * Handles the OAuth client-credentials flow against the MonCash gateway and
- * caches the resulting access token so that subsequent calls reuse it until
- * it expires.
+ * Handles the OAuth client-credentials flow against the MonCash gateway.
  */
 class Authentication
 {
     public function __construct(
         private readonly Config $config,
         private readonly HttpFactory $http,
-        private readonly CacheRepository $cache,
     ) {
     }
 
     /**
-     * Return a valid OAuth access token, fetching a new one only when the
-     * cached one has expired (or was never fetched).
+     * Fetch and return a fresh OAuth access token.
      */
-    public function getAccessToken(bool $forceRefresh = false): string
+    public function getAccessToken(): string
     {
-        $cacheKey = $this->config->cacheKey();
-
-        if (!$forceRefresh) {
-            $cached = $this->cache->get($cacheKey);
-            if (is_string($cached) && $cached !== '') {
-                return $cached;
-            }
-        }
-
-        [$token, $ttl] = $this->requestNewToken();
-
-        $this->cache->put($cacheKey, $token, max(1, $ttl));
-
-        return $token;
+        return $this->requestNewToken();
     }
 
-    /**
-     * Forget any cached access token. Useful on `401` responses so that the
-     * next call re-authenticates.
-     */
-    public function forgetToken(): void
-    {
-        $this->cache->forget($this->config->cacheKey());
-    }
-
-    /**
-     * @return array{0: string, 1: int} [token, ttlSeconds]
-     */
-    private function requestNewToken(): array
+    private function requestNewToken(): string
     {
         $endpoint = $this->config->apiBaseUrl() . $this->config->path('oauth');
 
@@ -108,9 +78,6 @@ class Authentication
             );
         }
 
-        $expiresIn = (int) ($payload['expires_in'] ?? 60);
-        $ttl = max(1, $expiresIn - $this->config->cacheTtlBuffer());
-
-        return [$token, $ttl];
+        return $token;
     }
 }

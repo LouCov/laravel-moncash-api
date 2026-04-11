@@ -50,23 +50,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Token cache
-    |--------------------------------------------------------------------------
-    |
-    | MonCash OAuth access tokens are valid for a short window. We cache the
-    | token to avoid re-authenticating on every single API call. Set `store`
-    | to null to use the default cache store.
-    |
-    */
-
-    'cache' => [
-        'store'      => env('MONCASH_CACHE_STORE'),
-        'key'        => 'moncash.access_token',
-        'ttl_buffer' => 30, // subtract this many seconds from the reported TTL
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Endpoints
     |--------------------------------------------------------------------------
     |

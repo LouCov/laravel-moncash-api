@@ -13,8 +13,7 @@ use Throwable;
 
 /**
  * Thin HTTP client that transparently authenticates requests against the
- * MonCash gateway and retries once on `401` responses (in case the cached
- * token has been invalidated server-side).
+ * MonCash gateway and retries once on `401` responses.
  */
 class MoncashClient
 {
@@ -38,9 +37,8 @@ class MoncashClient
 
         $response = $this->send($url, $payload);
 
-        // Transparent retry on an expired/revoked token.
+        // Transparent retry on a revoked token.
         if ($response->status() === 401) {
-            $this->auth->forgetToken();
             $response = $this->send($url, $payload);
         }
 

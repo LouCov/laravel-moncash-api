@@ -2,7 +2,6 @@
 
 namespace LouCov\LaravelMonCashApi;
 
-use Illuminate\Contracts\Cache\Factory as CacheFactory;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\ServiceProvider;
 use LouCov\LaravelMonCashApi\Console\InstallCommand;
@@ -27,15 +26,9 @@ class MoncashServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(Authentication::class, function ($app) {
-            /** @var Config $config */
-            $config = $app->make(Config::class);
-            /** @var CacheFactory $cacheFactory */
-            $cacheFactory = $app->make(CacheFactory::class);
-
             return new Authentication(
-                $config,
+                $app->make(Config::class),
                 $app->make(HttpFactory::class),
-                $cacheFactory->store($config->cacheStore()),
             );
         });
 
@@ -82,9 +75,10 @@ class MoncashServiceProvider extends ServiceProvider
 
         // After every `composer install` / `composer update` / `composer
         // dump-autoload`, Laravel runs `php artisan package:discover`.
-        // We piggy-back on that to seed the host application's .env file
-        // with the MonCash variables — idempotently and atomically.
+        // We piggy-back on that to publish the config file (if absent) and
+        // seed the host application's .env files — idempotently and atomically.
         if ($this->isPackageDiscoveryRun()) {
+            $this->publishConfigIfAbsent();
             $this->syncEnvironmentFile();
         }
     }
@@ -107,6 +101,30 @@ class MoncashServiceProvider extends ServiceProvider
         }
 
         return false;
+    }
+
+    /**
+     * Copy the package config into the host application's config directory
+     * the first time the package is discovered. Subsequent runs are no-ops so
+     * any local customisations made by the user are never overwritten.
+     */
+    private function publishConfigIfAbsent(): void
+    {
+        $destination = $this->app->configPath('moncash.php');
+
+        if (file_exists($destination)) {
+            return;
+        }
+
+        try {
+            copy(self::CONFIG_PATH, $destination);
+            @fwrite(
+                \defined('STDERR') ? STDERR : fopen('php://stderr', 'w'),
+                '  [moncash] Published config/moncash.php' . PHP_EOL
+            );
+        } catch (Throwable) {
+            // Never break `package:discover` on a file-write error.
+        }
     }
 
     private function syncEnvironmentFile(): void
