@@ -143,12 +143,43 @@ payment page.
 $payment = $moncash->payment(1000, 'ORDER-123');
 
 $payment->redirectUrl;      // string  — redirect the user here
-$payment->token();          // string  — the payment token
+$payment->token();          // string  — the payment token (shortcut)
 $payment->mode;             // string  — 'sandbox' | 'live'
 $payment->path;             // string  — gateway path used
 $payment->timestamp;        // int     — Unix timestamp of the response
 $payment->toArray();        // array   — structured response body
 $payment->raw;              // array   — raw API response
+```
+
+`$payment->paymentToken` is a typed `PaymentToken` object that exposes the
+full token payload returned by the API:
+
+```php
+$token = $payment->paymentToken;
+
+$token->token;                    // string  — the raw token string
+$token->created;                  // string  — creation date as returned by the API
+$token->expired;                  // string  — expiration date as returned by the API
+
+$token->createdAt();              // Carbon  — creation date
+$token->expiredAt();              // Carbon  — expiration date
+$token->isExpired();              // bool    — true if the token is past its expiry
+$token->secondsUntilExpiry();     // int     — seconds left (negative when expired)
+
+$token->toArray();                // array{token, created, expired}
+```
+
+Example — redirect only if the token is still valid:
+
+```php
+$payment = $moncash->payment(1000, 'ORDER-123');
+
+if ($payment->paymentToken->isExpired()) {
+    // Token already expired (edge case — tokens are valid for ~10 minutes)
+    abort(408);
+}
+
+return redirect($payment->redirectUrl);
 ```
 
 #### `paymentDetailsByTransactionId(string $transactionId): TransactionResponse`

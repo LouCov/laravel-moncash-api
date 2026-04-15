@@ -2,6 +2,8 @@
 
 namespace LouCov\LaravelMonCashApi\Responses;
 
+use LouCov\LaravelMonCashApi\Models\PaymentToken;
+
 /**
  * Response returned by PaymentService::create().
  *
@@ -11,12 +13,11 @@ namespace LouCov\LaravelMonCashApi\Responses;
 final class PaymentResponse
 {
     /**
-     * @param array<string, mixed> $paymentToken Raw payment token payload.
-     * @param array<string, mixed> $raw          Raw API response body.
+     * @param array<string, mixed> $raw Raw API response body.
      */
     public function __construct(
         public readonly string $redirectUrl,
-        public readonly array $paymentToken,
+        public readonly PaymentToken $paymentToken,
         public readonly string $mode,
         public readonly string $path,
         public readonly int $timestamp,
@@ -24,9 +25,12 @@ final class PaymentResponse
     ) {
     }
 
+    /**
+     * Shortcut to the raw token string.
+     */
     public function token(): string
     {
-        return (string) ($this->paymentToken['token'] ?? '');
+        return $this->paymentToken->token;
     }
 
     /**
@@ -37,7 +41,7 @@ final class PaymentResponse
         return [
             'mode'          => $this->mode,
             'path'          => $this->path,
-            'payment_token' => $this->paymentToken,
+            'payment_token' => $this->paymentToken->toArray(),
             'timestamp'     => $this->timestamp,
             'redirect'      => $this->redirectUrl,
         ];

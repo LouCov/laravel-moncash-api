@@ -5,6 +5,7 @@ namespace LouCov\LaravelMonCashApi\Services;
 use LouCov\LaravelMonCashApi\Exceptions\MoncashRequestException;
 use LouCov\LaravelMonCashApi\Http\MoncashClient;
 use LouCov\LaravelMonCashApi\Models\Order;
+use LouCov\LaravelMonCashApi\Models\PaymentToken;
 use LouCov\LaravelMonCashApi\Responses\PaymentResponse;
 
 /**
@@ -20,18 +21,20 @@ class PaymentService
     {
         $data = $this->client->post('create_payment', $order->toArray());
 
-        $paymentToken = (array) ($data['payment_token'] ?? []);
-        $token = (string) ($paymentToken['token'] ?? '');
+        $rawToken = (array) ($data['payment_token'] ?? []);
+        $tokenString = (string) ($rawToken['token'] ?? '');
 
-        if ($token === '') {
+        if ($tokenString === '') {
             throw new MoncashRequestException(
                 'MonCash CreatePayment response did not contain a payment token.',
                 context: $data,
             );
         }
 
+        $paymentToken = PaymentToken::fromArray($rawToken);
+
         return new PaymentResponse(
-            redirectUrl: $this->client->redirectUrl($token),
+            redirectUrl: $this->client->redirectUrl($tokenString),
             paymentToken: $paymentToken,
             mode: (string) ($data['mode'] ?? ''),
             path: (string) ($data['path'] ?? ''),
